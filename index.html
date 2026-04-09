@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KrishiMitra AI — Smart Farming Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #0d3b1e;
+    --green-mid: #1a5c32;
+    --green-bright: #2d8c52;
+    --green-accent: #4eca7f;
+    --green-glow: #6ef0a0;
+    --amber: #f5a623;
+    --amber-light: #ffd07a;
+    --sky: #7dd3fc;
+    --red-alert: #ff6b6b;
+    --cream: #f7f4ed;
+    --text-light: #e8f5ee;
+    --text-muted: #8db39c;
+    --card-bg: rgba(255,255,255,0.04);
+    --card-border: rgba(78,202,127,0.15);
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'Space Grotesk', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--green-deep);
+    color: var(--text-light);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(45,140,82,0.18) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(78,202,127,0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app-shell {
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 12px;
+  }
+
+  .logo { display: flex; align-items: center; gap: 10px; }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--green-accent), var(--green-glow));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    background: linear-gradient(90deg, var(--green-glow), var(--green-accent));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: -2px;
+  }
+
+  .weather-pill {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .weather-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .screen { display: none; flex-direction: column; flex: 1; padding: 0 16px 100px; }
+  .screen.active { display: flex; }
+
+  /* ── VOICE SCREEN ── */
+  .voice-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0 32px;
+    gap: 8px;
+  }
+
+  .voice-greeting {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .voice-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .voice-title span {
+    background: linear-gradient(90deg, var(--green-glow), var(--amber-light));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .mic-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin: 24px 0;
+  }
+
+  .mic-rings {
+    position: relative;
+    width: 160px; height: 160px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid var(--green-accent);
+    opacity: 0;
+    animation: ring-out 3s ease-out infinite;
+  }
+
+  .ring:nth-child(1) { width: 100%; height: 100%; animation-delay: 0s; }
+  .ring:nth-child(2) { width: 80%; height: 80%; animation-delay: 0.5s; }
+  .ring:nth-child(3) { width: 60%; height: 60%; animation-delay: 1s; }
+
+  @keyframes ring-out {
+    0% { opacity: 0.6; transform: scale(0.8); }
+    100% { opacity: 0; transform: scale(1.3); }
+  }
+
+  .mic-btn {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green-bright), var(--green-accent));
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    position: relative; z-index: 2;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 40px rgba(78,202,127,0.4);
+  }
+
+  .mic-btn:hover { transform: scale(1.05); box-shadow: 0 0 60px rgba(78,202,127,0.6); }
+  .mic-btn:active { transform: scale(0.96); }
+  .mic-btn.listening { background: linear-gradient(135deg, var(--red-alert), #ff9999); box-shadow: 0 0 40px rgba(255,107,107,0.5); }
+
+  .mic-label { font-size: 13px; color: var(--text-muted); }
+
+  .lang-row {
+    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .lang-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+
+  .lang-btn.active, .lang-btn:hover {
+    background: rgba(78,202,127,0.15);
+    border-color: var(--green-accent);
+    color: var(--green-glow);
+  }
+
+  .convo-box {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 16px;
+    min-height: 120px;
+    margin-bottom: 16px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .convo-msg {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .convo-msg.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .avatar.ai { background: rgba(78,202,127,0.2); }
+  .avatar.user { background: rgba(245,166,35,0.2); }
+
+  .bubble {
+    background: rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 10px 13px;
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 80%;
+  }
+
+  .bubble.ai { border-bottom-left-radius: 4px; }
+  .bubble.user { border-bottom-right-radius: 4px; background: rgba(78,202,127,0.12); text-align: right; }
+
+  .quick-title { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .quick-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 11px 12px;
+    font-size: 13px;
+    color: var(--text-light);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+
+  .quick-btn:hover { background: rgba(78,202,127,0.1); border-color: var(--green-accent); }
+  .quick-icon { font-size: 16px; display: block; margin-bottom: 4px; }
+
+  /* ── ALERTS ── */
+  .screen-header {
+    padding: 16px 0 12px;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .alert-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 15px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+
+  .alert-card:hover { transform: translateX(4px); }
+
+  .alert-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent-color, var(--green-accent));
+  }
+
+  .alert-icon-wrap {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .alert-content { flex: 1; }
+  .alert-title { font-weight: 600; font-size: 15px; margin-bottom: 3px; }
+  .alert-desc { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+  .alert-time { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+
+  .alert-card.danger { --accent-color: var(--red-alert); }
+  .alert-card.danger .alert-icon-wrap { background: rgba(255,107,107,0.15); }
+  .alert-card.warning { --accent-color: var(--amber); }
+  .alert-card.warning .alert-icon-wrap { background: rgba(245,166,35,0.15); }
+  .alert-card.info { --accent-color: var(--sky); }
+  .alert-card.info .alert-icon-wrap { background: rgba(125,211,252,0.15); }
+  .alert-card.success { --accent-color: var(--green-accent); }
+  .alert-card.success .alert-icon-wrap { background: rgba(78,202,127,0.15); }
+
+  .badge-new {
+    background: var(--red-alert);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* ── CROPS ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+
+  .stat-val { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .crop-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .crop-card:hover { transform: translateY(-2px); border-color: var(--green-accent); }
+
+  .crop-card.top-pick {
+    border-color: var(--green-accent);
+    background: rgba(78,202,127,0.07);
+  }
+
+  .crop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .crop-name-row { display: flex; align-items: center; gap: 10px; }
+  .crop-emoji { font-size: 28px; }
+  .crop-name { font-family: var(--font-display); font-size: 17px; font-weight: 600; }
+  .crop-season { font-size: 12px; color: var(--text-muted); }
+
+  .pick-badge {
+    background: rgba(78,202,127,0.2);
+    border: 1px solid var(--green-accent);
+    color: var(--green-glow);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .crop-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .metric {
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+  }
+
+  .metric-val { font-size: 15px; font-weight: 600; }
+  .metric-label { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  .confidence-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+
+  .confidence-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--green-bright), var(--green-accent));
+    transition: width 1s ease;
+  }
+
+  .confidence-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ── HISTORY ── */
+  .timeline { position: relative; padding-left: 24px; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 8px; bottom: 8px;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--green-accent), transparent);
+  }
+
+  .timeline-item { position: relative; margin-bottom: 20px; }
+
+  .timeline-dot {
+    position: absolute;
+    left: -21px; top: 5px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green-accent);
+    border: 2px solid var(--green-deep);
+  }
+
+  .timeline-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 13px 14px;
+  }
+
+  .timeline-date { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+  .timeline-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+
+  .yield-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+
+  .yield-tag.up { background: rgba(78,202,127,0.15); color: var(--green-glow); }
+  .yield-tag.down { background: rgba(255,107,107,0.15); color: var(--red-alert); }
+  .yield-tag.neutral { background: rgba(245,166,35,0.15); color: var(--amber-light); }
+
+  /* MCP Card */
+  .mcp-card {
+    background: linear-gradient(135deg, rgba(45,140,82,0.2), rgba(13,59,30,0.4));
+    border: 1px solid rgba(78,202,127,0.3);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .mcp-title {
+    font-size: 12px;
+    color: var(--green-accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mcp-live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-accent);
+    animation: pulse 1.5s infinite;
+  }
+
+  .mcp-inputs { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .mcp-tag {
+    background: rgba(78,202,127,0.1);
+    border: 1px solid rgba(78,202,127,0.2);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* Market */
+  .market-section {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .market-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .market-title { font-size: 14px; font-weight: 500; }
+  .market-price { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+  .price-up { color: var(--green-accent); }
+  .price-down { color: var(--red-alert); }
+
+  .mini-chart {
+    height: 60px;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .bar {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    background: rgba(78,202,127,0.3);
+    transition: height 0.5s ease;
+    cursor: pointer;
+  }
+
+  .bar:hover, .bar.active { background: var(--green-accent); }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%; max-width: 420px;
+    background: rgba(13,59,30,0.92);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    padding: 10px 0 18px;
+    z-index: 100;
+  }
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 4px 0;
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+  }
+
+  .nav-item.active { color: var(--green-accent); }
+  .nav-icon { font-size: 22px; line-height: 1; }
+  .nav-label { font-size: 10px; letter-spacing: 0.5px; }
+
+  .nav-badge {
+    position: absolute;
+    top: -2px; right: -4px;
+    width: 8px; height: 8px;
+    background: var(--red-alert);
+    border-radius: 50%;
+  }
+
+  .nav-icon-wrap { position: relative; }
+
+  /* Typing */
+  .typing-indicator { display: flex; gap: 4px; padding: 4px 0; }
+  .typing-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-accent);
+    animation: typing 1s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typing {
+    0%, 100% { opacity: 0.3; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-4px); }
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 20px; left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: var(--green-bright);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">🌱</div>
+      <div>
+        <div class="logo-text">KrishiMitra</div>
+        <div class="logo-sub">AI Engine v2.0</div>
+      </div>
+    </div>
+    <div class="weather-pill">
+      <div class="weather-dot"></div>
+      <span id="live-temp">28°C · Bengaluru</span>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: VOICE -->
+  <div class="screen active" id="screen-voice">
+
+    <div class="voice-hero">
+      <div class="voice-greeting">Namaskara, Farmer</div>
+      <div class="voice-title">Mathaadi, <span>KrishiMitra</span><br>Keluttade</div>
+    </div>
+
+    <div class="mcp-card">
+      <div class="mcp-title">
+        <div class="mcp-live-dot"></div>
+        MCP Engine — Live Context
+      </div>
+      <div class="mcp-inputs">
+        <div class="mcp-tag">🌦 Weather API</div>
+        <div class="mcp-tag">🌱 Soil IoT</div>
+        <div class="mcp-tag">💰 Mandi Prices</div>
+        <div class="mcp-tag">⚡ Energy Usage</div>
+        <div class="mcp-tag">📊 Crop Patterns</div>
+        <div class="mcp-tag">🧑‍🌾 Farmer History</div>
+      </div>
+    </div>
+
+    <div class="convo-box" id="convo-box">
+      <div class="convo-msg">
+        <div class="avatar ai">🤖</div>
+        <div class="bubble ai">Namaskara! Nanu KrishiMitra. Nimage yenu sahaaya beka? Ask me anything about your crops!</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 8px;">
+      <div class="quick-title">Select Language</div>
+      <div class="lang-row">
+        <button class="lang-btn active" onclick="setLang('kn', this)">ಕನ್ನಡ</button>
+        <button class="lang-btn" onclick="setLang('hi', this)">हिंदी</button>
+        <button class="lang-btn" onclick="setLang('te', this)">తెలుగు</button>
+        <button class="lang-btn" onclick="setLang('en', this)">English</button>
+      </div>
+    </div>
+
+    <div class="mic-container">
+      <div class="mic-rings">
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <button class="mic-btn" id="mic-btn" onclick="toggleMic()">🎤</button>
+      </div>
+      <div class="mic-label" id="mic-label">Tap to Speak</div>
+    </div>
+
+    <div>
+      <div class="quick-title">Quick Questions</div>
+      <div class="quick-grid">
+        <button class="quick-btn" onclick="askQuestion('rain')">
+          <span class="quick-icon">🌧</span>
+          Nale male barutha?
+        </button>
+        <button class="quick-btn" onclick="askQuestion('crop')">
+          <span class="quick-icon">🌾</span>
+          Yav crop haakali?
+        </button>
+        <button class="quick-btn" onclick="askQuestion('price')">
+          <span class="quick-icon">💰</span>
+          Tomato bele eshtu?
+        </button>
+        <button class="quick-btn" onclick="askQuestion('water')">
+          <span class="quick-icon">💧</span>
+          Neeru haakbeka?
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: ALERTS -->
+  <div class="screen" id="screen-alerts">
+    <div class="screen-header">Smart Alerts <span class="badge-new">4 New</span></div>
+
+    <div class="alert-card danger">
+      <div class="alert-icon-wrap">🌧</div>
+      <div class="alert-content">
+        <div class="alert-title">Heavy Rain — 6 Hours</div>
+        <div class="alert-desc">Stop irrigation immediately. Close field channels. Expected rainfall: 45mm.</div>
+        <div class="alert-time">2 minutes ago · High Priority</div>
+      </div>
+    </div>
+
+    <div class="alert-card warning">
+      <div class="alert-icon-wrap">💧</div>
+      <div class="alert-content">
+        <div class="alert-title">Soil Moisture Low</div>
+        <div class="alert-desc">Field 2 moisture at 28%. Consider irrigation before noon tomorrow.</div>
+        <div class="alert-time">1 hour ago · Medium Priority</div>
+      </div>
+    </div>
+
+    <div class="alert-card success">
+      <div class="alert-icon-wrap">💰</div>
+      <div class="alert-content">
+        <div class="alert-title">Tomato Price Rising ↑</div>
+        <div class="alert-desc">Bangalore mandi: ₹42/kg (+18% this week). Best time to harvest and sell.</div>
+        <div class="alert-time">3 hours ago · Opportunity</div>
+      </div>
+    </div>
+
+    <div class="alert-card info">
+      <div class="alert-icon-wrap">🌡</div>
+      <div class="alert-content">
+        <div class="alert-title">Optimal Sowing Window</div>
+        <div class="alert-desc">Next 5 days ideal for Ragi sowing. Temperature: 24–29°C. Low pest risk.</div>
+        <div class="alert-time">Today · Seasonal Insight</div>
+      </div>
+    </div>
+
+    <div class="alert-card warning">
+      <div class="alert-icon-wrap">⚡</div>
+      <div class="alert-content">
+        <div class="alert-title">Pump Running 7+ Hours</div>
+        <div class="alert-desc">Electricity cost today: ₹340. Optimize pump schedule to save ₹120/day.</div>
+        <div class="alert-time">Today · Energy Alert</div>
+      </div>
+    </div>
+
+    <div class="screen-header" style="font-size: 17px; margin-top: 8px;">Live Market Prices</div>
+
+    <div class="market-section">
+      <div class="market-header">
+        <div>
+          <div class="market-title">🍅 Tomato</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Bengaluru APMC</div>
+        </div>
+        <div>
+          <div class="market-price price-up">₹42/kg</div>
+          <div style="font-size: 11px; color: var(--green-accent); text-align: right;">↑ 18%</div>
+        </div>
+      </div>
+      <div class="mini-chart" id="chart-tomato"></div>
+    </div>
+
+    <div class="market-section">
+      <div class="market-header">
+        <div>
+          <div class="market-title">🧅 Onion</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Bengaluru APMC</div>
+        </div>
+        <div>
+          <div class="market-price price-down">₹28/kg</div>
+          <div style="font-size: 11px; color: var(--red-alert); text-align: right;">↓ 6%</div>
+        </div>
+      </div>
+      <div class="mini-chart" id="chart-onion"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: CROPS -->
+  <div class="screen" id="screen-crops">
+    <div class="screen-header">AI Crop Advisor</div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val" style="color: var(--green-accent)">82%</div>
+        <div class="stat-label">Soil Health</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" style="color: var(--sky)">28°C</div>
+        <div class="stat-label">Temperature</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" style="color: var(--amber)">65%</div>
+        <div class="stat-label">Humidity</div>
+      </div>
+    </div>
+
+    <div class="crop-card top-pick">
+      <div class="crop-header">
+        <div class="crop-name-row">
+          <div class="crop-emoji">🍅</div>
+          <div>
+            <div class="crop-name">Tomato</div>
+            <div class="crop-season">Kharif · 75 days</div>
+          </div>
+        </div>
+        <div class="pick-badge">★ Top Pick</div>
+      </div>
+      <div class="crop-metrics">
+        <div class="metric">
+          <div class="metric-val" style="color: var(--green-accent)">₹42k</div>
+          <div class="metric-label">Est. Profit/acre</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" style="color: var(--amber)">High</div>
+          <div class="metric-label">Market Demand</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" style="color: var(--sky)">Low</div>
+          <div class="metric-label">Water Need</div>
+        </div>
+      </div>
+      <div class="confidence-bar">
+        <div class="confidence-fill" style="width: 92%"></div>
+      </div>
+      <div class="confidence-label">
+        <span>AI Confidence</span>
+        <span style="color: var(--green-accent)">92%</span>
+      </div>
+    </div>
+
+    <div class="crop-card">
+      <div class="crop-header">
+        <div class="crop-name-row">
+          <div class="crop-emoji">🌾</div>
+          <div>
+            <div class="crop-name">Ragi</div>
+            <div class="crop-season">Kharif · 120 days</div>
+          </div>
+        </div>
+      </div>
+      <div class="crop-metrics">
+        <div class="metric">
+          <div class="metric-val" style="color: var(--green-accent)">₹28k</div>
+          <div class="metric-label">Est. Profit/acre</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" style="color: var(--amber)">Medium</div>
+          <div class="metric-label">Market Demand</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" style="color: var(--green-accent)">Very Low</div>
+          <div class="metric-label">Water Need</div>
+        </div>
+      </div>
+      <div class="confidence-bar">
+        <div class="confidence-fill" style="width: 78%"></div>
+      </div>
+      <div class="confidence-label">
+        <span>AI Confidence</span>
+        <span style="color: var(--amber-light)">78%</span>
+      </div>
+    </div>
+
+    <div class="crop-card">
+      <div class="crop-header">
+        <div class="crop-name-row">
+          <div class="crop-emoji">🌽</div>
+          <div>
+            <div class="crop-name">Maize</div>
+            <div class="crop-season">Rabi · 90 days</div>
+          </div>
+        </div>
+      </div>
+      <div class="crop-metrics">
+        <div class="metric">
+          <div class="metric-val" style="color: var(--green-accent)">₹22k</div>
+          <div class="metric-label">Est. Profit/acre</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" style="color: var(--sky)">Rising</div>
+          <div class="metric-label">Market Demand</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" style="color: var(--amber)">Medium</div>
+          <div class="metric-label">Water Need</div>
+        </div>
+      </div>
+      <div class="confidence-bar">
+        <div class="confidence-fill" style="width: 65%"></div>
+      </div>
+      <div class="confidence-label">
+        <span>AI Confidence</span>
+        <span>65%</span>
+      </div>
+    </div>
+
+    <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px; margin-bottom: 10px;">
+      <div style="font-size: 12px; color: var(--green-accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;">💡 Fertilizer Recommendation</div>
+      <div style="font-size: 14px; line-height: 1.6;">For Tomato: Apply <strong>NPK 19:19:19</strong> at 4kg/acre. Avoid urea in current humidity. Next application in <strong>14 days</strong>.</div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: HISTORY -->
+  <div class="screen" id="screen-history">
+    <div class="screen-header">Learning History</div>
+
+    <div style="background: linear-gradient(135deg, rgba(78,202,127,0.15), rgba(13,59,30,0.3)); border: 1px solid rgba(78,202,127,0.25); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
+      <div style="font-size: 12px; color: var(--green-accent); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;">🧬 Adaptive MCP Learning</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div style="text-align: center;">
+          <div style="font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--green-accent)">147</div>
+          <div style="font-size: 12px; color: var(--text-muted)">Voice Queries</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--amber)">+23%</div>
+          <div style="font-size: 12px; color: var(--text-muted)">Yield Improvement</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--sky)">89%</div>
+          <div style="font-size: 12px; color: var(--text-muted)">Prediction Accuracy</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--green-glow)">₹1.2L</div>
+          <div style="font-size: 12px; color: var(--text-muted)">Revenue Saved</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size: 14px; font-weight: 500; margin-bottom: 12px; color: var(--text-muted)">RECENT SUGGESTIONS</div>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-card">
+          <div class="timeline-date">Apr 8, 2025 · Suggestion</div>
+          <div class="timeline-title">Plant Tomato — Field 1 &amp; 3</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">MCP confidence: 92%. Based on soil moisture + market price uptick.</div>
+          <span class="yield-tag up">↑ +28% Yield vs Last Season</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-card">
+          <div class="timeline-date">Mar 22, 2025 · Alert Action</div>
+          <div class="timeline-title">Stopped Irrigation — Pre-Rain Alert</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Heavy rain predicted 4 hours before. Farmer stopped pump on time.</div>
+          <span class="yield-tag up">Saved ₹480 in electricity</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-card">
+          <div class="timeline-date">Mar 10, 2025 · Market Decision</div>
+          <div class="timeline-title">Sold Onion at Peak Price ₹35/kg</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">AI predicted price drop 3 days later. Farmer acted on alert.</div>
+          <span class="yield-tag up">↑ ₹12,000 extra revenue</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background: var(--amber)"></div>
+        <div class="timeline-card">
+          <div class="timeline-date">Feb 15, 2025 · Suggestion</div>
+          <div class="timeline-title">Suggested Rabi Wheat — Ignored</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Farmer planted Jowar instead. Yield was lower due to dry spell.</div>
+          <span class="yield-tag down">↓ 12% yield — Learning updated</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-card">
+          <div class="timeline-date">Jan 30, 2025 · Fertilizer</div>
+          <div class="timeline-title">NPK Optimization Applied</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Reduced fertilizer cost by 20% with AI-suggested schedule.</div>
+          <span class="yield-tag neutral">Neutral yield, high cost saving</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end app-shell -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-item active" onclick="switchScreen('voice', this)">
+    <div class="nav-icon-wrap">
+      <div class="nav-icon">🎤</div>
+    </div>
+    <div class="nav-label">Speak</div>
+  </button>
+  <button class="nav-item" onclick="switchScreen('alerts', this)">
+    <div class="nav-icon-wrap">
+      <div class="nav-icon">🔔</div>
+      <div class="nav-badge"></div>
+    </div>
+    <div class="nav-label">Alerts</div>
+  </button>
+  <button class="nav-item" onclick="switchScreen('crops', this)">
+    <div class="nav-icon-wrap">
+      <div class="nav-icon">🌾</div>
+    </div>
+    <div class="nav-label">Crops</div>
+  </button>
+  <button class="nav-item" onclick="switchScreen('history', this)">
+    <div class="nav-icon-wrap">
+      <div class="nav-icon">📊</div>
+    </div>
+    <div class="nav-label">History</div>
+  </button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── NAVIGATION ──
+  function switchScreen(name, btn) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'alerts') buildCharts();
+  }
+
+  // ── LANGUAGE ──
+  let currentLang = 'kn';
+  function setLang(lang, btn) {
+    currentLang = lang;
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    showToast('Language set to ' + lang.toUpperCase());
+  }
+
+  // ── MIC / VOICE ──
+  let listening = false;
+  let micTimer = null;
+
+  function toggleMic() {
+    listening = !listening;
+    const btn = document.getElementById('mic-btn');
+    const label = document.getElementById('mic-label');
+
+    if (listening) {
+      btn.classList.add('listening');
+      btn.textContent = '⏹';
+      label.textContent = 'Listening...';
+
+      // Try real Speech API first
+      if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rec = new SR();
+        const langMap = { kn: 'kn-IN', hi: 'hi-IN', te: 'te-IN', en: 'en-IN' };
+        rec.lang = langMap[currentLang] || 'kn-IN';
+        rec.interimResults = false;
+        rec.start();
+
+        rec.onresult = function(e) {
+          const transcript = e.results[0][0].transcript;
+          stopMic();
+          addConvoMsg('user', transcript);
+          setTimeout(() => showTyping(), 300);
+          setTimeout(() => {
+            removeTyping();
+            addConvoMsg('ai', 'MCP engine processing: "' + transcript + '". Based on live soil, weather & mandi data — I\'ll give you the best recommendation!');
+          }, 1800);
+        };
+
+        rec.onerror = function() {
+          // fallback to demo
+          micTimer = setTimeout(() => {
+            stopMic();
+            addConvoMsg('user', 'Nale male barutha? 🌧');
+            setTimeout(() => showTyping(), 300);
+            setTimeout(() => {
+              removeTyping();
+              addConvoMsg('ai', 'Haan! Naale sanje 4 gante male barutte (38mm). Irrigation nillisi. Channel close maadi. ✅');
+            }, 1800);
+          }, 2200);
+        };
+
+        rec.onend = function() { stopMic(); };
+
+      } else {
+        // Demo mode
+        micTimer = setTimeout(() => {
+          stopMic();
+          addConvoMsg('user', 'Nale male barutha? 🌧');
+          setTimeout(() => showTyping(), 300);
+          setTimeout(() => {
+            removeTyping();
+            addConvoMsg('ai', 'Haan! Naale sanje 4 gante male barutte (38mm). Irrigation nillisi. Channel close maadi. ✅');
+          }, 1800);
+        }, 2200);
+      }
+
+    } else {
+      stopMic();
+    }
+  }
+
+  function stopMic() {
+    listening = false;
+    clearTimeout(micTimer);
+    const btn = document.getElementById('mic-btn');
+    const label = document.getElementById('mic-label');
+    btn.classList.remove('listening');
+    btn.textContent = '🎤';
+    label.textContent = 'Tap to Speak';
+  }
+
+  // ── QUICK QUESTIONS ──
+  const responses = {
+    rain: {
+      q: 'Nale male barutha? 🌧',
+      a: 'Haan! Naale sanje 4 gante male barutte (38mm). Irrigation nillisi. Channel close maadi. ✅'
+    },
+    crop: {
+      q: 'Ee season ge yav crop haakali? 🌾',
+      a: 'MCP analysis prukara — Tomato best crop ee season ge! Market price ₹42/kg ide. 92% AI confidence. 🍅'
+    },
+    price: {
+      q: 'Tomato mandi bele eshtu? 💰',
+      a: 'Bengaluru APMC: Tomato ₹42/kg — ee vaara 18% jaasthi aagide. Ee vaara sell madodu advisable! 📈'
+    },
+    water: {
+      q: 'Field ge neeru haakbeka? 💧',
+      a: 'Rain forecast iruvudarianda — neeru haakbeda! Naale male aaguttade. Energy save maadi. ⚡'
+    }
+  };
+
+  function askQuestion(key) {
+    const r = responses[key];
+    addConvoMsg('user', r.q);
+    setTimeout(() => showTyping(), 300);
+    setTimeout(() => {
+      removeTyping();
+      addConvoMsg('ai', r.a);
+    }, 1700);
+  }
+
+  // ── CHAT ──
+  function addConvoMsg(role, text) {
+    const box = document.getElementById('convo-box');
+    const div = document.createElement('div');
+    div.className = 'convo-msg ' + role;
+    div.innerHTML =
+      '<div class="avatar ' + role + '">' + (role === 'ai' ? '🤖' : '🧑‍🌾') + '</div>' +
+      '<div class="bubble ' + role + '">' + text + '</div>';
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  let typingEl = null;
+  function showTyping() {
+    const box = document.getElementById('convo-box');
+    typingEl = document.createElement('div');
+    typingEl.className = 'convo-msg';
+    typingEl.innerHTML =
+      '<div class="avatar ai">🤖</div>' +
+      '<div class="bubble ai"><div class="typing-indicator">' +
+      '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>' +
+      '</div></div>';
+    box.appendChild(typingEl);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function removeTyping() {
+    if (typingEl) { typingEl.remove(); typingEl = null; }
+  }
+
+  // ── MARKET CHARTS ──
+  function buildCharts() {
+    buildChart('chart-tomato', [32, 34, 35, 31, 36, 39, 42], false);
+    buildChart('chart-onion',  [33, 31, 32, 30, 29, 28, 28], true);
+  }
+
+  function buildChart(id, vals, isDown) {
+    const el = document.getElementById(id);
+    if (!el || el.children.length > 0) return;
+    const max = Math.max(...vals);
+    vals.forEach((v, i) => {
+      const bar = document.createElement('div');
+      const isLast = i === vals.length - 1;
+      bar.className = 'bar' + (isLast ? ' active' : '');
+      bar.style.height = Math.round((v / max) * 100) + '%';
+      if (isDown) {
+        bar.style.background = isLast ? '#ff6b6b' : 'rgba(255,107,107,0.3)';
+      }
+      bar.title = '₹' + v + '/kg';
+      el.appendChild(bar);
+    });
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // ── LIVE WEATHER TICKER ──
+  const weatherCycles = [
+    '28°C · Bengaluru',
+    '27°C · Partly Cloudy',
+    '29°C · Sunny',
+    '26°C · Rain Likely'
+  ];
+  let wIdx = 0;
+  setInterval(() => {
+    wIdx = (wIdx + 1) % weatherCycles.length;
+    document.getElementById('live-temp').textContent = weatherCycles[wIdx];
+  }, 5000);
+
+  // ── INIT ──
+  buildCharts();
+</script>
+</body>
+</html>
